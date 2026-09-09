@@ -3,6 +3,8 @@ title: "Developer guide"
 description: "A short path from source checkout to the local messaging flow, with the repository as the authoritative guide."
 eyebrow: "05 / Developers"
 sources:
+  - label: "Device verification and registration transparency"
+    path: "docs/device-verification.md"
   - label: "Canonical setup and examples"
     path: "README.md"
   - label: "Pinned Rust toolchain"
@@ -69,6 +71,8 @@ Back in your setup terminal, register the prepared devices:
 ./scripts/dev/create-bob.sh
 ```
 
+Before first discovery, consider independently obtaining and pinning the service's public NKey. Otherwise the first validated log checkpoint establishes trust on first use. See “Verify device identity” below and the pinned verification guide for the exact trust model.
+
 For a fresh group, create and invite as Alice, then join as Bob:
 
 ```bash
@@ -89,12 +93,35 @@ One process may use a device directory at a time. The TUI's `/quit` exits. `dock
 
 > This setup has no TLS and stores local private state and transcripts unencrypted. Use disposable development conversations and trusted private directories. The source threat model documents these boundaries in detail.
 
+## Verify device identity
+
+Milestone 13 adds manual fingerprint verification and audited discovery. For an existing installation, stop clients and the service, preserve device databases and NATS data, rerun bootstrap, then restart the upgraded service. Upgrade every client; new clients require the updated audit API. Do not reopen migrated databases with older binaries.
+
+For an independent service-key pin, obtain the service's public NKey from the operator through a trusted channel and run `transparency pin` before first discovery. Without it, the first successfully validated checkpoint pins the signer by trust on first use. The verification guide below documents this setup and the refusal to replace existing pins.
+
+Close each device's TUI before using CLI commands on its home directory. Bob displays his own fingerprint locally:
+
+```bash
+./target/debug/epochgrid --home .dev/bob device fingerprint
+```
+
+Alice obtains Bob's complete fingerprint through an independent channel, compares it with her observed value, and supplies the independently received value:
+
+```bash
+./target/debug/epochgrid --home .dev/alice device fingerprint bob laptop
+./target/debug/epochgrid --home .dev/alice device verify bob laptop --fingerprint 'FULL FINGERPRINT FROM BOB'
+./target/debug/epochgrid --home .dev/alice transparency audit
+./target/debug/epochgrid --home .dev/alice transparency status
+```
+
+Replace the placeholder with all 64 hexadecimal digits. Each device requires separate verification. An observed identity change persists and blocks audited discovery, invitation and joining; inspect retained evidence with `device fingerprint bob laptop --offline`. Do not delete the database to suppress a warning. The signed log detects changes against retained history, not all malicious first views or isolated split views.
+
 ## Repository map
 
-- **`crates/epochgrid-core/`** — wire protocol, identities, groups, messages, durable delivery and SQLite/OpenMLS storage.
+- **`crates/epochgrid-core/`** — wire protocol, identities, device trust, registration transparency, groups, messages, durable delivery and SQLite/OpenMLS storage.
 - **`crates/epochgrid-client/`** — the `epochgrid` CLI, chat mode and Ratatui frontend.
 - **`crates/epochgrid-service/`** — the `epochgrid-service` identity service and live integration tests.
-- **`docs/`** — architecture, protocol, threat model, recovery, acceptance, TUI and multi-device notes.
+- **`docs/`** — architecture, protocol, threat model, recovery, acceptance, TUI, multi-device and device-verification notes.
 - **`scripts/dev/`** — bootstrap, identity helpers, verification and smoke tests.
 - **`config/` and `compose.yaml`** — the locally built NATS development image and Compose stack.
 

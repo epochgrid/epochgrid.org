@@ -3,6 +3,8 @@ title: "Technology choices"
 description: "The implemented stack, its responsibilities and its costs. These tradeoffs explain the architecture without treating every dependency as a permanent commitment."
 eyebrow: "03 / Technology"
 sources:
+  - label: "Device verification and registration transparency"
+    path: "docs/device-verification.md"
   - label: "Workspace dependencies and package metadata"
     path: "Cargo.toml"
   - label: "Compatibility and storage decisions"
@@ -38,6 +40,14 @@ This reuses an existing transport and persistence system while keeping message d
 **Role: foundational current authentication model.** Devices authenticate to NATS using user NKeys. Signed registrations bind those public keys to independent MLS identities, and the service checks explicit operator enrollment.
 
 The development configuration is straightforward to inspect, but static enrollment requires configuration management and restart. JWT/account authorization is discussed as an option for future policy; JWT authentication callouts are not the implemented authentication path.
+
+## Fingerprints and the signed Merkle log
+
+**Role: implemented device-trust evidence.** SHA-256 fingerprints identify a device's bound public identity. A service-NKey-signed checkpoint commits to the registration log. Clients retain the signer, root and size and compare later snapshots with that history.
+
+The Merkle construction follows RFC 6962, as documented in the verification guide; this does not implement the Certificate Transparency protocol. A full snapshot provides inclusion and prefix evidence without a compact-proof API. One NATS KV compare-and-swap publishes the log and checkpoint atomically, and SQLite retains each device's observed trust state.
+
+This is deliberately bounded alpha infrastructure: at most 256 entries or 65,536 encoded bytes, subject to transport overhead. It has no pagination, witness network, freshness proof or signer rotation. First-contact trust still requires an independent service-key pin or trust on first use. Replacing this storage or proof representation would require compatibility and trust-state migration work.
 
 ## OpenMLS and RustCrypto
 

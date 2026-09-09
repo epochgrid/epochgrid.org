@@ -62,8 +62,9 @@ import { urls, sourceUrl } from "../site";
   <div class="wrap">
     <Callout title="Unaudited development prototype">
       <p>
-        The scoped MVP, terminal client and multi-device alpha are implemented.
-        This is a development system with known security and lifecycle gaps.{" "}
+        Milestones 0–13 are complete: the scoped MVP, terminal client,
+        independent devices and manual device verification. This is a
+        development system with known security and lifecycle gaps.{" "}
         <a href="/project/#current-status">
           Read the current scope and limitations →
         </a>
@@ -121,7 +122,7 @@ import { urls, sourceUrl } from "../site";
         ],
         [
           "Encrypted group messages",
-          "Authenticated Welcome joining and MLS PrivateMessages for the two-device development flow.",
+          "Authenticated Welcome joining and MLS PrivateMessages, with creator-serialized membership additions.",
         ],
         [
           "Durable delivery and history",
@@ -130,6 +131,14 @@ import { urls, sourceUrl } from "../site";
         [
           "A persistent terminal client",
           "Channel navigation, message composition, history, unread counts and automatic reconnect.",
+        ],
+        [
+          "Independent devices",
+          "Separate keys and state per device, explicit invitations and ordered membership catch-up.",
+        ],
+        [
+          "Device verification",
+          "Manual fingerprint comparison, persistent key-change warnings and a signed registration log with locally retained checkpoints.",
         ],
       ].map(([title, body]) => (
         <div>
@@ -147,9 +156,27 @@ import { urls, sourceUrl } from "../site";
       ·{" "}
       <ExternalLink href={sourceUrl("docs/tui.md")}>
         Terminal client
+      </ExternalLink>{" "}
+      ·{" "}
+      <ExternalLink href={sourceUrl("docs/device-verification.md")}>
+        Verification and log limits
       </ExternalLink>
     </p>
   </section>
+  <div class="wrap">
+    <Callout title="Toward the MVP/production alpha">
+      <p>
+        <StatusBadge status="planned" /> Device revocation and MLS rekeying are
+        next. Later roadmap targets include encrypted recovery, attachments,
+        ephemeral events, receipts, message relationships and secure service
+        participants. These targets do not establish production readiness or a
+        fixed release scope.{" "}
+        <a href="/project/#toward-the-mvpproduction-alpha">
+          Read the release direction and remaining gaps →
+        </a>
+      </p>
+    </Callout>
+  </div>
   <section class="section wrap">
     <div class="section-heading">
       <p class="eyebrow">03 / Message path</p>

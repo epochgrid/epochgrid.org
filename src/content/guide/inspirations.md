@@ -3,6 +3,8 @@ title: "Inspirations and related work"
 description: "Technical context for the design: actual dependencies, relevant comparisons, and the boundary between shared ideas and protocol compatibility."
 eyebrow: "04 / Related work"
 sources:
+  - label: "Device verification and registration transparency"
+    path: "docs/device-verification.md"
   - label: "Implemented architecture"
     path: "docs/architecture.md"
   - label: "Actual dependencies"
@@ -41,7 +43,7 @@ For readers of EpochGrid, the relevant comparison is how conversation state and 
 
 [Signal's technical documentation](https://signal.org/docs/) describes key-agreement and ratcheting protocols, including multi-device session management. It is a useful reminder that message encryption, identity assurance and device lifecycle need to be considered together.
 
-EpochGrid uses OpenMLS group state and independent device leaves, not Signal's protocol stack. Its threat model still identifies verification, rotation and revocation gaps. Signal is related work, not a documented source influence or an interoperability target. No security ranking between the projects is implied.
+EpochGrid uses OpenMLS group state and independent device leaves, not Signal's protocol stack. Milestone 13 implements manual device verification and a bounded signed registration log; first-contact trust, rotation and revocation remain limitations. Signal is related work, not a documented source influence or an interoperability target. No security ranking between the projects is implied.
 
 ## Reading the boundaries together
 

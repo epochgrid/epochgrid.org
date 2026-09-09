@@ -17,7 +17,7 @@
       <small>Ciphertext storage + routing</small>
       <div class="flow-service">
         <strong>Identity service</strong>
-        <small>Public registrations · enrollment</small>
+        <small>Enrollment · signed registration log</small>
       </div>
     </div>
     <div class="flow-link">
@@ -37,10 +37,10 @@
     </strong>{" "}
     <span id="flow-desc">
       Clients exchange MLS ciphertext through NATS and JetStream. A separate
-      service manages public identities and provisions streams and consumers.
-      Each endpoint decrypts and retains its own plaintext history. The broker
-      still sees routing and traffic metadata; the loopback development
-      transport has no TLS.
+      service manages public identities, signs registration checkpoints and
+      provisions streams and consumers. Each endpoint decrypts and retains its
+      own plaintext history. The broker still sees routing and traffic metadata;
+      the loopback development transport has no TLS.
     </span>
   </figcaption>
 </figure>

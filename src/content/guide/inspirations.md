@@ -15,9 +15,9 @@ sources:
 
 ## Ideas are not interoperability
 
-NATS and MLS directly shape EpochGrid because they are implemented dependencies. The inspected repository does not document a historical design influence from Matrix, Signal or SCION. Those projects are included below as useful conceptual reference points, not as attributed origin stories.
+NATS and MLS directly shape EpochGrid because they are implemented dependencies. The inspected repository does not document a historical design influence from Matrix or Signal. Those projects are included below as useful conceptual reference points, not as attributed origin stories.
 
-No Matrix, Signal or SCION compatibility is established. Use of MLS likewise does not imply that an arbitrary MLS application can join an EpochGrid group.
+No Matrix or Signal compatibility is established. Use of MLS likewise does not imply that an arbitrary MLS application can join an EpochGrid group.
 
 ## Matrix: open messaging across servers
 
@@ -43,12 +43,6 @@ For readers of EpochGrid, the relevant comparison is how conversation state and 
 
 EpochGrid uses OpenMLS group state and independent device leaves, not Signal's protocol stack. Its threat model still identifies verification, rotation and revocation gaps. Signal is related work, not a documented source influence or an interoperability target. No security ranking between the projects is implied.
 
-## SCION: routing trust is a different layer
-
-[SCION](https://scion.org/) studies Internet architecture with explicit path control and trust domains. It is relevant context for distinguishing network-path properties from application-content protection.
-
-EpochGrid's NATS subjects and application routing do not implement SCION path selection. No SCION transport integration is present in the inspected workspace, and no historical influence is documented. The comparison highlights a boundary: protecting message content at endpoints does not provide network-path control or hide traffic metadata.
-
 ## Reading the boundaries together
 
-An open protocol, a durable broker, group encryption and path-aware networking address different problems. EpochGrid currently combines a subset of these ideas through specific dependencies. Evaluations should follow the actual code and threat model, rather than infer compatibility or inherited guarantees from a list of related projects.
+Open protocols, durable brokers and group encryption address different problems. EpochGrid currently combines a subset of these ideas through specific dependencies. Evaluations should follow the actual code and threat model, rather than infer compatibility or inherited guarantees from a list of related projects.

@@ -3,6 +3,8 @@ title: "The project"
 description: "A development prototype exploring how a shared messaging fabric can carry conversations whose content is protected at the endpoints."
 eyebrow: "01 / Project"
 sources:
+  - label: "Device verification and registration transparency"
+    path: "docs/device-verification.md"
   - label: "Project scope and runnable workflow"
     path: "README.md"
   - label: "Security status"
@@ -30,9 +32,11 @@ These goals do not establish that every failure mode or deployment environment h
 
 ## Current status
 
-**Unaudited development alpha.** The source marks Milestones 0–12 complete. The scoped two-device MVP has acceptance tests for discovery, invitation, encrypted chat, offline catch-up and process restart. The persistent terminal client adds channels, composition, local history, unread counts and reconnect.
+**Unaudited development alpha.** The source marks Milestones 0–13 complete. The scoped two-device MVP has acceptance tests for discovery, invitation, encrypted chat, offline catch-up and process restart. The persistent terminal client adds channels, composition, local history, unread counts and reconnect.
 
 **Experimental: multi-device alpha.** The current source adds independent device leaves for one logical user, operator enrollment, per-device invitations and creator-serialized membership additions. New devices receive future messages, not previous history. Queued messages from an earlier epoch can become unreadable after membership changes.
+
+**Implemented: device verification and registration transparency.** Milestone 13 adds independent fingerprint comparison, persistent warnings when an observed device identity changes, and a service-signed Merkle registration log. Clients retain a signer pin and checkpoint to detect rollback or changes to previously observed log history. First-contact trust, isolated split views and freshness remain limitations; this is not a global transparency network.
 
 The workspace declares version `0.1.0`. At this site's source review, GitHub had no published releases. Package version metadata is not a production release or stability commitment.
 
@@ -44,9 +48,20 @@ This is not currently a complete consumer messaging product, a Matrix homeserver
 
 ## Known gaps and planned work
 
-Repository documentation identifies exact membership-aware broker permissions, key rotation and revocation, member removal, KeyPackage replenishment, identity verification and storage hardening as unfinished. Retention quotas and hardware power-loss testing also remain pending.
+Repository documentation identifies exact membership-aware broker permissions, key rotation and revocation, member removal, KeyPackage replenishment and storage hardening as unfinished. Retention quotas and hardware power-loss testing also remain pending.
 
-The documented next milestone is device verification and key transparency (13). Milestones 14–20 list revocation/rekeying, encrypted recovery, attachments, ephemeral events, receipts, message relationships and secure service participants. These are **planned work**, not implemented capabilities, with no delivery dates promised here. Consult current source and issues before depending on any particular direction.
+The next documented milestone is **device revocation and MLS rekeying (14)**. Manual verification and the bounded registration log are already implemented; automatic identity replacement, global split-view detection and freshness guarantees are not.
+
+## Toward the MVP/production alpha
+
+The completed Milestones 0–10 MVP is a tested two-device messaging slice. The broader MVP/production-alpha direction builds on that foundation, the terminal client, independent devices and Milestone 13 verification. The core README records the following **planned targets**:
+
+- **Device revocation and MLS rekeying** — Milestone 14, the next documented step.
+- **Encrypted recovery and attachments** — part of the planned Milestones 15–20 scope.
+- **Ephemeral events, receipts and message relationships** — also planned, rather than current messaging capabilities.
+- **Secure service participants** — planned within Milestones 15–20; the current identity service is not an MLS conversation participant.
+
+The repository does not yet define which of these milestones is the release cutoff, a release date, or production acceptance criteria. These are development targets, not a shipped release or a production-readiness claim. TLS, exact group authorization, endpoint storage and the remaining identity-lifecycle gaps still need attention before a production-readiness assessment. Consult the current README and security policy for changes to scope.
 
 ## Compared with a centralized application
 

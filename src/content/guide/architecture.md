@@ -3,6 +3,8 @@ title: "Architecture and security"
 description: "Follow a message from local encryption to durable delivery, and examine what each component can see, authorize and retain."
 eyebrow: "02 / Architecture"
 sources:
+  - label: "Device verification and registration transparency"
+    path: "docs/device-verification.md"
   - label: "Architecture and trust boundaries"
     path: "docs/architecture.md"
   - label: "Wire protocol"
@@ -19,15 +21,27 @@ sources:
 
 `epochgrid-core` contains identity, wire types, OpenMLS state, local SQLite storage and NATS operations. The `epochgrid` binary supplies scripting commands and a Ratatui terminal interface. `epochgrid-service` is a NATS-only identity service.
 
-The service validates public registrations, checks explicit enrollment, serves discovery and reserves one-use KeyPackages. It provisions JetStream streams, key-value buckets and durable consumers. SQLite belongs to the client, not the service. There is no HTTP API or server-side transcript store.
+The service validates public registrations, checks explicit enrollment, signs the registration log, serves audited discovery and reserves one-use KeyPackages. It provisions JetStream streams, key-value buckets and durable consumers. SQLite belongs to the client, not the service. There is no HTTP API or server-side transcript store.
 
 ## Identity and joining
 
 A device has an NKey for NATS authentication and an independently generated MLS Ed25519 signing key. Registration signs the binding between user, device, NATS public key, MLS credential and KeyPackage. The service validates the signature, package lifetime and operator enrollment. Clients revalidate directory records on lookup.
 
-A signature demonstrates possession of a key; it does not verify a human identity. The operator and directory remain trusted for enrollment. Key transparency, manual verification and revocation are not implemented.
+A signature demonstrates possession of a key; it does not verify a human identity. The operator remains trusted for initial enrollment. Milestone 13 adds manual verification and an authenticated registration history; revocation remains unimplemented.
 
 The creator makes a local MLS group with an authenticated name and random routing identifier, reserves the invited device's initial KeyPackage, and queues the encrypted Commit and Welcome. The joining device explicitly selects an inviter and checks the authenticated Welcome signer against that inviter's verified directory identity before committing the join.
+
+## Device verification and registration transparency
+
+Each installation retains observed identity fingerprints, manual verification state and a signed Merkle checkpoint. Verification requires comparing the complete fingerprint through an independent channel. Copying the directory's own value back into the client is not independent verification.
+
+An observed identity change is persistently marked `changed`, even for a previously unverified device. It blocks audited discovery, invitation and joining, and remains blocked if the old identity returns. The TUI surfaces trust failures; there is no automatic replacement or warning-reset workflow.
+
+The service signs a checkpoint over a bounded public registration log using its NKey. Clients validate signatures and the Merkle root, pin the signer, and require later snapshots to reproduce the previously retained prefix. TRANSPARENCY KV stores the snapshot atomically; IDENTITIES is its public directory projection. Full snapshots are limited to 256 registrations or 65,536 encoded bytes, whichever is reached first, with transport overhead potentially lowering the practical limit.
+
+First contact trusts the first validated signer unless its public key was independently pinned beforehand. An unchanged old checkpoint can be replayed. There is no freshness proof, gossip or witness network, or detection of isolated split views between installations. A compromised signer can append dishonest new identities; deleting local trust state loses observed evidence.
+
+Audits protect discovery and new group admission. They do not retroactively verify every existing MLS leaf or re-authorize the scripting message path for every message. TUI polling stops on audit failures, while existing local history remains readable. These controls leave the endpoint plaintext and transport metadata boundaries unchanged.
 
 ## Four separate security layers
 
@@ -61,7 +75,7 @@ Only the creator device serializes additions. Receivers process encrypted member
 
 ## Persistence and delivery
 
-JetStream's CHAT stream retains encrypted group traffic; MAILBOX retains Welcomes for offline invitees. IDENTITIES KV stores public registrations. CHANNELS KV is provisioned but unused.
+JetStream's CHAT stream retains encrypted group traffic; MAILBOX retains Welcomes for offline invitees. TRANSPARENCY KV stores the signed public registration snapshot, with IDENTITIES as its directory projection. CHANNELS KV is provisioned but unused.
 
 A sender commits its new ratchet state, ciphertext outbox entry and outgoing local transcript together, then waits for a JetStream publish acknowledgment. Retrying reuses the stored ciphertext and stable message identifier.
 

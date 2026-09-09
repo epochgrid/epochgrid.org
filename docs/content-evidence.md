@@ -28,7 +28,7 @@ The user-created website repository is https://github.com/epochgrid/epochgrid.or
 
 ## Maintainer review and material limitations
 
-- Matrix, Signal and SCION are requested related-work topics; historical influence is not documented in source. The website explicitly presents conceptual comparisons, not attributed influences or interoperability commitments. NATS and MLS are actual dependencies.
+- Matrix and Signal are requested related-work topics; historical influence is not documented in source. The website explicitly presents conceptual comparisons, not attributed influences or interoperability commitments. NATS and MLS are actual dependencies.
 - Technology tradeoffs are editorial analysis of implemented roles, not maintainer quotations or recorded selection ADRs. Maintainers should review this interpretation.
 - No production audit, benchmark, adoption evidence, release schedule or cross-application interoperability test suite is established. The website makes no such claims.
 - Development commands were checked against committed README/scripts. The website task did not rerun the Rust/infrastructure suite or touch existing .dev state; the public core CI results are distinct evidence.

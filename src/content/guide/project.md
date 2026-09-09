@@ -40,7 +40,7 @@ The workspace declares version `0.1.0`. At this site's source review, GitHub had
 
 The executable scope is a Rust library, a command-line and terminal client, a NATS-only identity service, and local development infrastructure. There is no HTTP application API or attachments implementation. CHANNELS KV is provisioned but unused; it does not define cryptographic membership.
 
-This is not currently a complete consumer messaging product, a Matrix homeserver or a general interoperability gateway. The repository does not establish a federation protocol or compatibility with Signal or SCION.
+This is not currently a complete consumer messaging product, a Matrix homeserver or a general interoperability gateway. The repository does not establish a federation protocol or compatibility with Signal.
 
 ## Known gaps and planned work
 

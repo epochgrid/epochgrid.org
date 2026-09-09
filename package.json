@@ -1,0 +1,40 @@
+{
+  "name": "epochgrid-website",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "check": "astro check",
+    "test": "node --test tests/static.test.mjs",
+    "test:links": "node scripts/check-links.mjs",
+    "test:browser": "playwright test",
+    "validate": "npm run format:check && npm run lint && npm run check && npm run build && npm test && npm run test:links && npm run test:browser"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "3.7.4",
+    "astro": "7.3.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@axe-core/playwright": "4.13.0",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.63.0",
+    "cheerio": "1.2.0",
+    "eslint": "10.10.0",
+    "eslint-plugin-astro": "3.1.0",
+    "globals": "17.12.0",
+    "prettier": "3.9.6",
+    "prettier-plugin-astro": "1.0.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.70.0"
+  }
+}

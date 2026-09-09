@@ -1,0 +1,46 @@
+<figure class="architecture-figure">
+  <div class="flow" role="img" aria-labelledby="flow-title flow-desc">
+    <div class="flow-endpoint">
+      <span class="technical">Endpoint A</span>
+      <strong>CLI / terminal client</strong>
+      <span>OpenMLS · local SQLite</span>
+      <small>Plaintext + private state</small>
+    </div>
+    <div class="flow-link">
+      <span aria-hidden="true">↔</span>
+      <small>MLS bytes</small>
+    </div>
+    <div class="flow-fabric">
+      <span class="technical">Infrastructure</span>
+      <strong>NATS + JetStream</strong>
+      <span>CHAT / MAILBOX</span>
+      <small>Ciphertext storage + routing</small>
+      <div class="flow-service">
+        <strong>Identity service</strong>
+        <small>Public registrations · enrollment</small>
+      </div>
+    </div>
+    <div class="flow-link">
+      <span aria-hidden="true">↔</span>
+      <small>MLS bytes</small>
+    </div>
+    <div class="flow-endpoint">
+      <span class="technical">Endpoint B</span>
+      <strong>CLI / terminal client</strong>
+      <span>OpenMLS · local SQLite</span>
+      <small>Plaintext + private state</small>
+    </div>
+  </div>
+  <figcaption>
+    <strong id="flow-title">
+      Message content is encrypted at the endpoints.
+    </strong>{" "}
+    <span id="flow-desc">
+      Clients exchange MLS ciphertext through NATS and JetStream. A separate
+      service manages public identities and provisions streams and consumers.
+      Each endpoint decrypts and retains its own plaintext history. The broker
+      still sees routing and traffic metadata; the loopback development
+      transport has no TLS.
+    </span>
+  </figcaption>
+</figure>

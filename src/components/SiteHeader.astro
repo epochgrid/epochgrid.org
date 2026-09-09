@@ -1,0 +1,95 @@
+---
+import { navigation, urls } from "../site";
+import ExternalLink from "./ExternalLink.astro";
+import ThemeToggle from "./ThemeToggle.astro";
+const path = Astro.url.pathname;
+---
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="wordmark" href="/" aria-label="EpochGrid home">
+      <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true">
+        <path
+          d="M5 5h22v22H5zM5 16h22M16 5v22"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+        />
+        <path d="M5 5h11v11H5zM16 16h11v11H16z" fill="currentColor" />
+      </svg>
+      EpochGrid
+    </a>
+    <button
+      id="menu-toggle"
+      class="utility menu-toggle"
+      hidden
+      aria-controls="primary-navigation"
+      aria-expanded="false"
+    >
+      Menu <span aria-hidden="true">☰</span>
+    </button>
+    <nav id="primary-navigation" aria-label="Primary">
+      {navigation.map((item) => (
+        <a
+          href={item.href}
+          aria-current={path === item.href ? "page" : undefined}
+        >
+          {item.label}
+        </a>
+      ))}
+      <ExternalLink href={urls.source}>GitHub</ExternalLink>
+    </nav>
+    <ThemeToggle />
+  </div>
+</header>
+<script>
+  const button = document.querySelector<HTMLButtonElement>("#menu-toggle");
+  const nav = document.querySelector<HTMLElement>("#primary-navigation");
+  let lastFocused: Element | null = document.activeElement;
+  document.addEventListener("focusin", () => {
+    lastFocused = document.activeElement;
+  });
+  const mobile = matchMedia("(max-width: 70rem)");
+  if (button && nav) {
+    button.hidden = false;
+    document.documentElement.classList.add("navigation-ready");
+    const close = (restore = false) => {
+      button.setAttribute("aria-expanded", "false");
+      nav.classList.remove("is-open");
+      if (restore) button.focus();
+    };
+    button.addEventListener("click", () => {
+      const open = button.getAttribute("aria-expanded") !== "true";
+      button.setAttribute("aria-expanded", String(open));
+      nav.classList.toggle("is-open", open);
+    });
+    document.addEventListener("keydown", (event) => {
+      if (
+        event.key === "Escape" &&
+        button.getAttribute("aria-expanded") === "true"
+      )
+        close(true);
+    });
+    document.addEventListener("click", (event) => {
+      if (
+        event.target instanceof Node &&
+        !nav.contains(event.target) &&
+        !button.contains(event.target)
+      )
+        close();
+    });
+    nav.addEventListener("focusout", () => {
+      setTimeout(() => {
+        if (
+          !nav.contains(document.activeElement) &&
+          document.activeElement !== button
+        )
+          close();
+      }, 0);
+    });
+    mobile.addEventListener("change", () => {
+      const focusWasInside = nav.contains(lastFocused);
+      close(mobile.matches && focusWasInside);
+    });
+  }
+</script>

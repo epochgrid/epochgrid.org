@@ -1,0 +1,210 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import ArchitectureDiagram from "../components/ArchitectureDiagram.astro";
+import StatusBadge from "../components/StatusBadge.astro";
+import ExternalLink from "../components/ExternalLink.astro";
+import Callout from "../components/Callout.astro";
+import { urls, sourceUrl } from "../site";
+---
+
+<SiteLayout
+  title="Messaging across a shared fabric"
+  description="EpochGrid combines NATS infrastructure with MLS end-to-end group encryption. Explore the architecture, prototype capabilities, and developer workflow."
+>
+  <section class="hero wrap">
+    <div>
+      <p class="eyebrow">Open source / distributed messaging</p>
+      <h1>
+        Shared infrastructure.
+        <br />
+        <span>Endpoint encryption.</span>
+      </h1>
+      <p class="lede">
+        EpochGrid combines NATS messaging infrastructure with MLS end-to-end
+        group encryption. The fabric routes and stores messages. Devices hold
+        the keys and read the content.
+      </p>
+      <div class="actions">
+        <a class="button primary" href="/architecture/">
+          Explore the architecture <span aria-hidden="true">→</span>
+        </a>
+        <a class="button" href="/developers/">
+          Developer guide
+        </a>
+        <ExternalLink href={urls.source}>View on GitHub</ExternalLink>
+      </div>
+    </div>
+    <div class="hero-note">
+      <span class="technical">Project snapshot / 01</span>
+      <div class="topology" aria-hidden="true">
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+        <i></i>
+      </div>
+      <dl>
+        <div>
+          <dt>Transport</dt>
+          <dd>NATS + JetStream</dd>
+        </div>
+        <div>
+          <dt>Encryption</dt>
+          <dd>MLS via OpenMLS</dd>
+        </div>
+        <div>
+          <dt>Implementation</dt>
+          <dd>Rust · CLI + TUI</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+  <div class="wrap">
+    <Callout title="Unaudited development prototype">
+      <p>
+        The scoped MVP, terminal client and multi-device alpha are implemented.
+        This is a development system with known security and lifecycle gaps.{" "}
+        <a href="/project/#current-status">
+          Read the current scope and limitations →
+        </a>
+      </p>
+    </Callout>
+  </div>
+  <section class="section wrap">
+    <div class="section-heading">
+      <p class="eyebrow">01 / Purpose</p>
+      <h2>Why EpochGrid?</h2>
+      <p class="section-intro">
+        Separate the messaging fabric from the keys that make a conversation
+        readable.
+      </p>
+    </div>
+    <div class="three-columns">
+      <div>
+        <span class="index">01</span>
+        <h3>Infrastructure has a defined role</h3>
+        <p>
+          NATS handles routing, authentication and persistence. The identity
+          service manages public registration metadata, without an application
+          decryption path.
+        </p>
+      </div>
+      <div>
+        <span class="index">02</span>
+        <h3>Group state stays at the edge</h3>
+        <p>
+          OpenMLS manages cryptographic membership. Independent device keys and
+          authenticated Welcome messages connect directory identity to the
+          group.
+        </p>
+      </div>
+      <div>
+        <span class="index">03</span>
+        <h3>Failure is part of the workflow</h3>
+        <p>
+          Durable inboxes, a ciphertext outbox and local transactions support
+          offline catch-up and tested process restart boundaries.
+        </p>
+      </div>
+    </div>
+  </section>
+  <section class="section wrap">
+    <div class="section-heading">
+      <p class="eyebrow">02 / Implementation</p>
+      <h2>A working, deliberately scoped system</h2>
+    </div>
+    <div class="capability-grid">
+      {[
+        [
+          "Identity and discovery",
+          "Independent NATS and MLS keys; signed registrations and operator-authorized enrollment.",
+        ],
+        [
+          "Encrypted group messages",
+          "Authenticated Welcome joining and MLS PrivateMessages for the two-device development flow.",
+        ],
+        [
+          "Durable delivery and history",
+          "JetStream ciphertext, retryable sends, local transcripts and offline catch-up.",
+        ],
+        [
+          "A persistent terminal client",
+          "Channel navigation, message composition, history, unread counts and automatic reconnect.",
+        ],
+      ].map(([title, body]) => (
+        <div>
+          <StatusBadge status="implemented" />
+          <h3>{title}</h3>
+          <p>{body}</p>
+        </div>
+      ))}
+    </div>
+    <p class="fine">
+      Implemented describes repository code, not production readiness.{" "}
+      <ExternalLink href={sourceUrl("docs/mvp-acceptance.md")}>
+        Acceptance evidence
+      </ExternalLink>{" "}
+      ·{" "}
+      <ExternalLink href={sourceUrl("docs/tui.md")}>
+        Terminal client
+      </ExternalLink>
+    </p>
+  </section>
+  <section class="section wrap">
+    <div class="section-heading">
+      <p class="eyebrow">03 / Message path</p>
+      <h2>One fabric. Distinct trust boundaries.</h2>
+      <p class="section-intro">
+        Content encryption, broker permissions and local storage provide
+        different protections.
+      </p>
+    </div>
+    <ArchitectureDiagram />
+    <a class="text-link" href="/architecture/">
+      Inspect the security layers →
+    </a>
+  </section>
+  <section class="section wrap">
+    <div class="section-heading">
+      <p class="eyebrow">04 / Foundations</p>
+      <h2>A small set of substantial building blocks</h2>
+    </div>
+    <div class="stack-strip">
+      <div>
+        <strong>Rust</strong>
+        <span>Shared core, CLI and service</span>
+      </div>
+      <div>
+        <strong>NATS</strong>
+        <span>Transport and durable streams</span>
+      </div>
+      <div>
+        <strong>OpenMLS</strong>
+        <span>Group cryptographic state</span>
+      </div>
+      <div>
+        <strong>SQLite</strong>
+        <span>Transactional device storage</span>
+      </div>
+    </div>
+    <a class="text-link" href="/technology/">
+      Roles, rationale and tradeoffs →
+    </a>
+  </section>
+  <section class="contribute wrap">
+    <p class="eyebrow">Build with the project</p>
+    <h2>Start with the code. Help refine the boundaries.</h2>
+    <p>
+      Run the development flow, examine the threat model, or discuss a focused
+      change with the maintainers.
+    </p>
+    <div class="actions">
+      <a class="button primary" href="/developers/">
+        Get started →
+      </a>
+      <ExternalLink href={urls.contributing}>
+        Contribution guidelines
+      </ExternalLink>
+    </div>
+  </section>
+</SiteLayout>

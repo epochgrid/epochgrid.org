@@ -1,0 +1,24 @@
+---
+import { urls } from "../site";
+import ExternalLink from "./ExternalLink.astro";
+---
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <a class="wordmark" href="/">
+        EpochGrid
+      </a>
+      <p>NATS infrastructure. MLS group encryption.</p>
+      <p class="fine">GitHub is the authoritative source for project status.</p>
+    </div>
+    <nav aria-label="Project resources">
+      <ExternalLink href={urls.organization}>Organization</ExternalLink>
+      <ExternalLink href={urls.source}>Source</ExternalLink>
+      <ExternalLink href={urls.issues}>Issues</ExternalLink>
+      <ExternalLink href={urls.releases}>Releases</ExternalLink>
+      <ExternalLink href={urls.license}>MIT license</ExternalLink>
+      <ExternalLink href={urls.website}>Website source</ExternalLink>
+    </nav>
+  </div>
+</footer>

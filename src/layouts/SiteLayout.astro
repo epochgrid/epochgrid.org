@@ -1,0 +1,77 @@
+---
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import { site, urls } from "../site";
+import "../styles/global.css";
+interface Props {
+  title: string;
+  description: string;
+  noindex?: boolean;
+}
+const { title, description, noindex = false } = Astro.props;
+const canonical = new URL(noindex ? "/404.html" : Astro.url.pathname, site.url)
+  .href;
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  name: site.name,
+  description: site.description,
+  url: site.url,
+  codeRepository: urls.source,
+  programmingLanguage: "Rust",
+  license: "https://spdx.org/licenses/MIT.html",
+  developmentStatus: site.status,
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>
+      try {
+        const t = localStorage.getItem("epochgrid-theme");
+        if (t === "light" || t === "dark")
+          document.documentElement.dataset.theme = t;
+      } catch {
+        /* Fall back to the system theme when storage is unavailable. */
+      }
+    </script>
+    <title>{title} | EpochGrid</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="EpochGrid" />
+    <meta property="og:title" content={`${title} | EpochGrid`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={`${site.url}/social.png`} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="EpochGrid — NATS infrastructure. MLS group encryption."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#0b151c" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/site.webmanifest" />
+    {noindex && <meta name="robots" content="noindex" />}
+    <script
+      is:inline
+      type="application/ld+json"
+      set:html={JSON.stringify(schema)}
+    ></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">
+      Skip to content
+    </a>
+    <SiteHeader />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>

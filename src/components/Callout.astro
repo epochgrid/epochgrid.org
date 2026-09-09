@@ -1,0 +1,12 @@
+---
+interface Props {
+  title: string;
+}
+---
+
+<aside class="callout" aria-label={Astro.props.title}>
+  <strong>{Astro.props.title}</strong>
+  <div>
+    <slot />
+  </div>
+</aside>

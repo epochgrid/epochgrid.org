@@ -1,0 +1,73 @@
+---
+import { getCollection, render } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+import SiteLayout from "../layouts/SiteLayout.astro";
+import ArchitectureDiagram from "../components/ArchitectureDiagram.astro";
+import ExternalLink from "../components/ExternalLink.astro";
+import { sourceUrl, site, urls } from "../site";
+export async function getStaticPaths() {
+  return (await getCollection("guide")).map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+interface Props {
+  entry: CollectionEntry<"guide">;
+}
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+---
+
+<SiteLayout title={entry.data.title} description={entry.data.description}>
+  <div class="page-heading wrap">
+    <p class="eyebrow">{entry.data.eyebrow}</p>
+    <h1>{entry.data.title}</h1>
+    <p class="lede">{entry.data.description}</p>
+  </div>
+  <div class="document-grid wrap">
+    <aside class="toc">
+      <nav aria-label="On this page">
+        <p class="technical">On this page</p>
+        {headings
+          .filter((h) => h.depth === 2)
+          .map((h) => (
+            <a href={`#${h.slug}`}>{h.text}</a>
+          ))}
+      </nav>
+      <p class="fine">
+        Source baseline
+        <br />
+        Milestone 12 · prototype
+        <br />
+        Reviewed {site.reviewed}
+      </p>
+    </aside>
+    <article class="prose">
+      {entry.id === "architecture" && <ArchitectureDiagram />}
+      {entry.id === "developers" && (
+        <div class="resource-links" aria-label="Developer resources">
+          <ExternalLink href={urls.source}>Source repository</ExternalLink>
+          <ExternalLink href={urls.readme}>Current README</ExternalLink>
+          <ExternalLink href={urls.contributing}>Contribute</ExternalLink>
+          <ExternalLink href={urls.issues}>Issues and discussion</ExternalLink>
+          <ExternalLink href={urls.releases}>Releases</ExternalLink>
+        </div>
+      )}
+      <Content />
+      <section class="source-notes" aria-labelledby="sources">
+        <h2 id="sources">Source notes</h2>
+        <p>
+          These references pin the implementation described here. GitHub
+          contains the current project status and full documentation.
+        </p>
+        <ul>
+          {entry.data.sources.map((s) => (
+            <li>
+              <ExternalLink href={sourceUrl(s.path)}>{s.label}</ExternalLink>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </article>
+  </div>
+</SiteLayout>

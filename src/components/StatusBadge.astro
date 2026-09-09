@@ -1,0 +1,10 @@
+---
+import { statuses } from "../site";
+interface Props {
+  status: keyof typeof statuses;
+}
+---
+
+<span class="badge" data-status={Astro.props.status}>
+  {statuses[Astro.props.status]}
+</span>

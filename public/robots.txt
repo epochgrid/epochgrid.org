@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://epochgrid.org/sitemap-index.xml

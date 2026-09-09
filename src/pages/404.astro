@@ -1,0 +1,28 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import ExternalLink from "../components/ExternalLink.astro";
+import { urls } from "../site";
+---
+
+<SiteLayout
+  title="Page not found"
+  description="This route is unavailable. Return to EpochGrid or find the developer resources."
+  noindex
+>
+  <section class="wrap error-page">
+    <p class="eyebrow">404 / Route unavailable</p>
+    <h1>That page is not here.</h1>
+    <p class="lede">
+      The link may have moved. These paths will get you back to the project.
+    </p>
+    <div class="actions">
+      <a class="button primary" href="/">
+        Home →
+      </a>
+      <a class="button" href="/developers/">
+        Developer guide
+      </a>
+      <ExternalLink href={urls.organization}>GitHub organization</ExternalLink>
+    </div>
+  </section>
+</SiteLayout>

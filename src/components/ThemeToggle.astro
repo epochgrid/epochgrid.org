@@ -1,0 +1,57 @@
+<button
+  id="theme-toggle"
+  class="utility"
+  hidden
+  aria-label="Use dark theme"
+  aria-pressed="false"
+>
+  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+    <circle
+      cx="12"
+      cy="12"
+      r="8"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+    />
+    <path d="M12 4a8 8 0 0 1 0 16Z" fill="currentColor" />
+  </svg>
+  <span id="theme-label">Theme</span>
+</button>
+<script>
+  const button = document.querySelector<HTMLButtonElement>("#theme-toggle");
+  const preference = matchMedia("(prefers-color-scheme: dark)");
+  const current = () =>
+    document.documentElement.dataset.theme ??
+    (preference.matches ? "dark" : "light");
+  const update = () => {
+    if (!button) return;
+    const dark = current() === "dark";
+    button.setAttribute("aria-pressed", String(dark));
+    button.setAttribute("aria-label", `Use ${dark ? "light" : "dark"} theme`);
+    const label = document.querySelector("#theme-label");
+    if (label) label.textContent = dark ? "Light" : "Dark";
+  };
+  if (button) {
+    button.hidden = false;
+    update();
+    button.addEventListener("click", () => {
+      const theme = current() === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = theme;
+      try {
+        localStorage.setItem("epochgrid-theme", theme);
+      } catch {
+        /* Private storage may be unavailable. */
+      }
+      update();
+    });
+    preference.addEventListener("change", update);
+    window.addEventListener("storage", (event) => {
+      if (event.key !== "epochgrid-theme") return;
+      if (event.newValue === "light" || event.newValue === "dark")
+        document.documentElement.dataset.theme = event.newValue;
+      else delete document.documentElement.dataset.theme;
+      update();
+    });
+  }
+</script>

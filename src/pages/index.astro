@@ -62,9 +62,10 @@ import { urls, sourceUrl } from "../site";
   <div class="wrap">
     <Callout title="Unaudited development prototype">
       <p>
-        Milestones 0–13 are complete: the scoped MVP, terminal client,
-        independent devices and manual device verification. This is a
-        development system with known security and lifecycle gaps.{" "}
+        Milestones 0–16 are complete, including device verification, revocation
+        and rekeying, encrypted identity-administration recovery, and encrypted
+        attachments. This is a development system with known security and
+        lifecycle gaps.{" "}
         <a href="/project/#current-status">
           Read the current scope and limitations →
         </a>
@@ -118,11 +119,11 @@ import { urls, sourceUrl } from "../site";
       {[
         [
           "Identity and discovery",
-          "Independent NATS and MLS keys; signed registrations and operator-authorized enrollment.",
+          "Independent keys, signed registration and enrollment, plus device revocation with broker exclusion and coordinated MLS removal.",
         ],
         [
           "Encrypted group messages",
-          "Authenticated Welcome joining and MLS PrivateMessages, with creator-serialized membership additions.",
+          "Authenticated Welcome joining and MLS PrivateMessages, with coordinator-serialized membership changes.",
         ],
         [
           "Durable delivery and history",
@@ -139,6 +140,14 @@ import { urls, sourceUrl } from "../site";
         [
           "Device verification",
           "Manual fingerprint comparison, persistent key-change warnings and a signed registration log with locally retained checkpoints.",
+        ],
+        [
+          "Encrypted identity recovery",
+          "Client-encrypted control credentials and trust evidence. Resuming messaging requires a fresh device and invitation; old chat keys and history are excluded.",
+        ],
+        [
+          "Encrypted attachments",
+          "Client-encrypted files in NATS Object Store; metadata and keys inside MLS. Explicit authenticated saves, with size and retention limits.",
         ],
       ].map(([title, body]) => (
         <div>
@@ -160,17 +169,20 @@ import { urls, sourceUrl } from "../site";
       ·{" "}
       <ExternalLink href={sourceUrl("docs/device-verification.md")}>
         Verification and log limits
+      </ExternalLink>{" "}
+      ·{" "}
+      <ExternalLink href={sourceUrl("README.md")}>
+        Milestone status
       </ExternalLink>
     </p>
   </section>
   <div class="wrap">
     <Callout title="Toward the MVP/production alpha">
       <p>
-        <StatusBadge status="planned" /> Device revocation and MLS rekeying are
-        next. Later roadmap targets include encrypted recovery, attachments,
-        ephemeral events, receipts, message relationships and secure service
-        participants. These targets do not establish production readiness or a
-        fixed release scope.{" "}
+        <StatusBadge status="planned" /> Ephemeral encrypted events are next
+        (17). Receipts, message relationships and secure service participants
+        remain planned (18–20). These targets do not establish production
+        readiness or a fixed release scope.{" "}
         <a href="/project/#toward-the-mvpproduction-alpha">
           Read the release direction and remaining gaps →
         </a>

@@ -3,6 +3,12 @@ title: "Inspirations and related work"
 description: "Technical context for the design: actual dependencies, relevant comparisons, and the boundary between shared ideas and protocol compatibility."
 eyebrow: "04 / Related work"
 sources:
+  - label: "Device revocation and MLS rekeying"
+    path: "docs/device-revocation.md"
+  - label: "Encrypted identity-administration recovery"
+    path: "docs/encrypted-recovery.md"
+  - label: "Encrypted attachments"
+    path: "docs/attachments.md"
   - label: "Device verification and registration transparency"
     path: "docs/device-verification.md"
   - label: "Implemented architecture"
@@ -37,13 +43,13 @@ For readers of EpochGrid, the relevant comparison is how conversation state and 
 
 [Messaging Layer Security, RFC 9420](https://www.rfc-editor.org/rfc/rfc9420.html), specifies group key establishment and encrypted messaging with evolving group state. EpochGrid delegates that cryptography to [OpenMLS](https://openmls.tech/), rather than defining its own group-encryption primitive.
 
-**Implemented protocol:** MLS Welcomes, encrypted application messages and Commits. EpochGrid adds its own enrollment, directory, routing and persistence conventions. Interoperability with unrelated MLS applications has not been established by an integration test or commitment. Membership removal, key updates and their lifecycle guarantees remain incomplete in EpochGrid.
+**Implemented protocol:** MLS Welcomes, encrypted application messages and Commits. EpochGrid adds its own enrollment, directory, routing and persistence conventions. Interoperability with unrelated MLS applications has not been established by an integration test or commitment. Coordinated removal and rekeying are implemented, while general key rotation and comprehensive lifecycle guarantees remain incomplete in EpochGrid.
 
 ## Signal: key lifecycle is part of the system
 
 [Signal's technical documentation](https://signal.org/docs/) describes key-agreement and ratcheting protocols, including multi-device session management. It is a useful reminder that message encryption, identity assurance and device lifecycle need to be considered together.
 
-EpochGrid uses OpenMLS group state and independent device leaves, not Signal's protocol stack. Milestone 13 implements manual device verification and a bounded signed registration log; first-contact trust, rotation and revocation remain limitations. Signal is related work, not a documented source influence or an interoperability target. No security ranking between the projects is implied.
+EpochGrid uses OpenMLS group state and independent device leaves, not Signal's protocol stack. Milestone 13 implements manual device verification and a bounded signed registration log; Milestone 14 adds revocation and coordinated removal, and Milestone 15 recovers identity administration without old messaging keys. First-contact trust and general key rotation remain limitations. Signal is related work, not a documented source influence or an interoperability target. No security ranking between the projects is implied.
 
 ## Reading the boundaries together
 

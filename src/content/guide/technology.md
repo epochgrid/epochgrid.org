@@ -3,6 +3,12 @@ title: "Technology choices"
 description: "The implemented stack, its responsibilities and its costs. These tradeoffs explain the architecture without treating every dependency as a permanent commitment."
 eyebrow: "03 / Technology"
 sources:
+  - label: "Device revocation and MLS rekeying"
+    path: "docs/device-revocation.md"
+  - label: "Encrypted identity-administration recovery"
+    path: "docs/encrypted-recovery.md"
+  - label: "Encrypted attachments"
+    path: "docs/attachments.md"
   - label: "Device verification and registration transparency"
     path: "docs/device-verification.md"
   - label: "Workspace dependencies and package metadata"
@@ -48,6 +54,18 @@ The development configuration is straightforward to inspect, but static enrollme
 The Merkle construction follows RFC 6962, as documented in the verification guide; this does not implement the Certificate Transparency protocol. A full snapshot provides inclusion and prefix evidence without a compact-proof API. One NATS KV compare-and-swap publishes the log and checkpoint atomically, and SQLite retains each device's observed trust state.
 
 This is deliberately bounded alpha infrastructure: at most 256 entries or 65,536 encoded bytes, subject to transport overhead. It has no pagination, witness network, freshness proof or signer rotation. First-contact trust still requires an independent service-key pin or trust on first use. Replacing this storage or proof representation would require compatibility and trust-state migration work.
+
+## Native NATS revocation enforcement
+
+**Role: current single-broker authorization implementation.** A signed revocation journal records durable intent. The service updates a public authorization include, uses a restricted system-account NKey to request native reload, and removes revoked-device consumers. This disconnects the device and excludes reconnect without giving ordinary clients system permissions.
+
+The actuator needs local file access and broker control, and currently manages one broker/service. Its successful acknowledgment covers network enforcement, not completion of offline MLS removal. Coordinator-driven rekeying supplies the separate group-content boundary.
+
+## AES-GCM recovery and Object Store attachments
+
+**Role: implemented client encryption and storage integration.** Recovery and file encryption use the existing OpenMLS RustCrypto AES-256-GCM implementation with fresh random secrets. Recovery uses an independently versioned encrypted file, not a password-derived key or an MLS database backup. Owned secret buffers use `zeroize`; this does not guarantee removal of swap, crash dumps or library copies.
+
+Attachments enable `async-nats` Object Store support. Encrypted file bytes use standard object chunks while sensitive metadata and keys travel inside MLS. Reusing NATS avoids a separate HTTP storage service but inherits the shared lab's authorization and availability limits. The client verifies bounded reads before saving; files are held in bounded memory, with an 8 MiB default and connectivity required. Native stream retention bounds orphan uploads but does not erase recipient copies.
 
 ## OpenMLS and RustCrypto
 

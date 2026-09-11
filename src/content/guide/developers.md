@@ -3,6 +3,12 @@ title: "Developer guide"
 description: "A short path from source checkout to the local messaging flow, with the repository as the authoritative guide."
 eyebrow: "05 / Developers"
 sources:
+  - label: "Device revocation and MLS rekeying"
+    path: "docs/device-revocation.md"
+  - label: "Encrypted identity-administration recovery"
+    path: "docs/encrypted-recovery.md"
+  - label: "Encrypted attachments"
+    path: "docs/attachments.md"
   - label: "Device verification and registration transparency"
     path: "docs/device-verification.md"
   - label: "Canonical setup and examples"
@@ -116,9 +122,28 @@ Alice obtains Bob's complete fingerprint through an independent channel, compare
 
 Replace the placeholder with all 64 hexadecimal digits. Each device requires separate verification. An observed identity change persists and blocks audited discovery, invitation and joining; inspect retained evidence with `device fingerprint bob laptop --offline`. Do not delete the database to suppress a warning. The signed log detects changes against retained history, not all malicious first views or isolated split views.
 
+## Revocation, recovery and attachments
+
+Milestones 14–16 require updated clients, service and bootstrap configuration. Stop clients and the service, preserve device directories and the NATS volume, rerun bootstrap, then restart. Do not mix old and new clients or downgrade migrated databases. Upgrade every member before sending attachments: old clients cannot safely render manifests containing file keys.
+
+**Device revocation (14).** An active same-user installation or the operator can revoke an exact device. `device revoke USER DEVICE` is irreversible; read the pinned revocation guide before using it. Success excludes its NKey from the managed broker, while offline groups still await coordinator rekeying. Known revoked-epoch queued sends remain blocked for explicit resend.
+
+**Encrypted identity-administration recovery (15).** `recovery export --output PACKAGE --secret-file SECRET` creates separate new files; protect the secret separately. `recovery restore --input PACKAGE --secret-file SECRET` requires an empty home. The restored home can administer identity while authorized, but has no MLS keys, history or attachment manifests and cannot chat. Follow the recovery guide for fresh device enrollment, lost-device revocation and re-invitation. Do not delete a working home to test restoration.
+
+**Encrypted attachments (16).** After both devices have joined, send a local file and explicitly save it on the receiving device:
+
+```bash
+./target/debug/epochgrid --home .dev/alice attachment send engineering ./report.pdf --mime application/pdf
+./target/debug/epochgrid --home .dev/bob channel sync engineering
+./target/debug/epochgrid --home .dev/bob attachment list engineering
+./target/debug/epochgrid --home .dev/bob attachment save engineering ATTACHMENT_ID ./saved-report.pdf
+```
+
+Use the ID printed by send/list/history and a new output path. The TUI also supports `/attach PATH` and `/save ID OUTPUT_PATH`. Transfers need connectivity; defaults are 8 MiB per file and seven-day object retention. Downloads authenticate before writing and refuse overwrite. Saved files are plaintext, are not opened automatically and are not part of recovery exports. The source guides below document configuration, migration and failure handling.
+
 ## Repository map
 
-- **`crates/epochgrid-core/`** — wire protocol, identities, device trust, registration transparency, groups, messages, durable delivery and SQLite/OpenMLS storage.
+- **`crates/epochgrid-core/`** — wire protocol, identities, trust and revocation, encrypted recovery and attachments, groups, durable delivery and SQLite/OpenMLS storage.
 - **`crates/epochgrid-client/`** — the `epochgrid` CLI, chat mode and Ratatui frontend.
 - **`crates/epochgrid-service/`** — the `epochgrid-service` identity service and live integration tests.
 - **`docs/`** — architecture, protocol, threat model, recovery, acceptance, TUI, multi-device and device-verification notes.

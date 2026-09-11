@@ -1,12 +1,12 @@
 # Content evidence and review ledger
 
-Reviewed 2026-09-09 for the Milestone 13 content update. No applicable AGENTS.md found in the workspace or ancestor directories. The adjacent core repository was inspected and left untouched. Public source: https://github.com/epochgrid/epochgrid.
+Reviewed 2026-09-10 for the Milestone 16 content update. No applicable AGENTS.md found in the workspace or ancestor directories. The adjacent core repository was inspected and left untouched. Public source: https://github.com/epochgrid/epochgrid.
 
 ## Publication baseline
 
-Pinned commit: `d6acbb0b127a6fb343569459a8ab4f2efa1266c5`, public main after the Milestone 13 merge. README marks Milestones 0–13 complete: manual device verification, persistent key-change warnings and a signed Merkle registration log are implemented. The implementation commit `b0fbde6165288d509a8c0f4b0f7cd133e7c99390` passed public core CI; the merge commit also passed its public CI run. A clean temporary checkout of public main was used alongside the adjacent repository, which was left untouched.
+Pinned commit: `fac33578ef393954f24295fd891f0190fc3a8cd7`, public main after Milestone 16. README marks Milestones 0–16 complete. The attachment implementation commit `174369e8d15bd7194ebcd492b1a6bc6699cfe05b` and the public merge commit both passed core CI. A clean temporary checkout of public main was inspected; the adjacent core working tree was left untouched.
 
-The site incorporates the published Milestone 13 changes. No later uncommitted core work is represented as published. Source URLs are pinned centrally in `src/site.ts`.
+The site incorporates the published Milestones 14–16 changes. No later uncommitted core work is represented as published. Source URLs are pinned centrally in `src/site.ts`.
 
 Public GitHub had no releases and Discussions was disabled at review. Cargo workspace version 0.1.0 is metadata, not a published release. The core license is MIT, copyright 2026 EpochGrid contributors; the website uses that established notice. No separate ADR directory, official logo, examples directory or package publishing workflow was found. Runnable examples are in README and scripts/dev.
 
@@ -14,17 +14,17 @@ The user-created website repository is https://github.com/epochgrid/epochgrid.or
 
 ## Evidence map
 
-| Claim                                                              | Core repository evidence                                                                                            |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| Unaudited development alpha; milestone status and plans            | README.md, SECURITY.md, docs/mvp-acceptance.md                                                                      |
-| NATS transport, NKey auth, service enrollment, verified identity   | docs/architecture.md, docs/protocol.md, crates/epochgrid-core/src/identity.rs, crates/epochgrid-service/src/main.rs |
-| MLS PrivateMessages and authenticated Welcome                      | crates/epochgrid-core/src/messaging.rs, groups.rs; docs/protocol.md                                                 |
-| Durable mailbox, CHAT, offline history, outbox, local transactions | docs/architecture.md, recovery.md; delivery.rs, history.rs                                                          |
-| TUI and reconnect                                                  | docs/tui.md, crates/epochgrid-client/src/tui/                                                                       |
-| Multi-device alpha, creator-only additions, epoch limitations      | docs/multi-device.md, devices.rs, epochs.rs, groups.rs, service integration tests                                   |
-| Security gaps and metadata exposure                                | SECURITY.md, docs/threat-model.md                                                                                   |
-| Dependencies, binaries, supported toolchain                        | Cargo.toml, crates/*/Cargo.toml, Cargo.lock, rust-toolchain.toml                                                    |
-| Development commands and local OCI build, no publishing            | README.md, scripts/dev/*, config/nats.Dockerfile, compose.yaml, .github/workflows/ci.yml, CONTRIBUTING.md           |
+| Claim                                                                 | Core repository evidence                                                                                            |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Unaudited development alpha; milestone status and plans               | README.md, SECURITY.md, docs/mvp-acceptance.md                                                                      |
+| NATS transport, NKey auth, service enrollment, verified identity      | docs/architecture.md, docs/protocol.md, crates/epochgrid-core/src/identity.rs, crates/epochgrid-service/src/main.rs |
+| MLS PrivateMessages and authenticated Welcome                         | crates/epochgrid-core/src/messaging.rs, groups.rs; docs/protocol.md                                                 |
+| Durable mailbox, CHAT, offline history, outbox, local transactions    | docs/architecture.md, recovery.md; delivery.rs, history.rs                                                          |
+| TUI and reconnect                                                     | docs/tui.md, crates/epochgrid-client/src/tui/                                                                       |
+| Multi-device alpha, coordinator-managed membership, epoch limitations | docs/multi-device.md, devices.rs, epochs.rs, groups.rs, service integration tests                                   |
+| Security gaps and metadata exposure                                   | SECURITY.md, docs/threat-model.md                                                                                   |
+| Dependencies, binaries, supported toolchain                           | Cargo.toml, crates/*/Cargo.toml, Cargo.lock, rust-toolchain.toml                                                    |
+| Development commands and local OCI build, no publishing               | README.md, scripts/dev/*, config/nats.Dockerfile, compose.yaml, .github/workflows/ci.yml, CONTRIBUTING.md           |
 
 ### Milestone 13 evidence
 
@@ -34,7 +34,14 @@ The user-created website repository is https://github.com/epochgrid/epochgrid.or
 
 ### MVP/production-alpha target scope
 
-README names Milestone 14 (revocation and MLS rekeying) as next, and Milestones 15–20 (encrypted recovery, attachments, ephemeral events, receipts, message relationships and secure service participants) as planned. No public GitHub milestones, open issues or releases supplied a narrower release cutoff at review. The site presents these as the documented development direction toward the requested MVP/production alpha, explicitly without inventing a release boundary, date or production acceptance criteria. The completed two-device MVP remains distinct from this broader target.
+README names Milestone 17 (ephemeral encrypted events) as next, with Milestones 18–20 (receipts, message relationships and secure service participants) planned. Revocation/rekeying, identity-administration recovery and encrypted attachments are now completed milestones, not future targets. No public release or GitHub milestone defines a fixed release cutoff at this review. The completed two-device MVP remains distinct from the broader alpha and any future production-readiness assessment.
+
+### Milestones 14–16 evidence
+
+- `docs/device-revocation.md`, `revocation.rs` and the service enforcement path establish irreversible signed requests, separate revocation checkpoints, durable enforcement intent, single-broker NATS reload/consumer deletion, coordinator succession and MLS removal. Offline completion and stale-checkpoint limitations remain explicit.
+- `docs/encrypted-recovery.md` and `recovery.rs` establish AES-256-GCM control-credential/trust exports, separately held random secrets, authenticated empty-home restore and recovery-only restrictions. No MLS private state, transcript or attachment manifests are exported; a fresh messaging device and surviving coordinator are required.
+- `docs/attachments.md`, `attachments.rs`, README and Cargo workspace establish Object Store integration, MLS-protected manifests, bounded authenticated downloads, explicit output paths, defaults and retention limits. Local DEKs/saved plaintext and shared-bucket availability limitations are documented.
+- `docs/architecture.md`, `docs/protocol.md`, README, Cargo.toml and SECURITY.md were checked for cross-page consistency. The commands were inspected against source rather than executed against the user's infrastructure.
 
 ## Maintainer review and material limitations
 
@@ -42,6 +49,6 @@ README names Milestone 14 (revocation and MLS rekeying) as next, and Milestones 
 - Technology tradeoffs are editorial analysis of implemented roles, not maintainer quotations or recorded selection ADRs. Maintainers should review this interpretation.
 - No production audit, benchmark, adoption evidence, release schedule or cross-application interoperability test suite is established. The website makes no such claims.
 - Development commands were checked against committed README/scripts. The website task did not rerun the Rust/infrastructure suite or touch existing .dev state; the public core CI results are distinct evidence.
-- Milestones 12 and 13 are implemented alpha code. Its experimental label describes maturity, not an unmerged branch. Future roadmap entries remain explicitly planned.
+- Milestones 12–16 are implemented alpha code. The experimental label describes maturity, not an unmerged branch. Future roadmap entries remain explicitly planned.
 
 Long-form pages carry source notes. Refresh this ledger, source revision and claims together when core behavior changes.

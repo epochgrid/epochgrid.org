@@ -14,10 +14,11 @@
       <span class="technical">Infrastructure</span>
       <strong>NATS + JetStream</strong>
       <span>CHAT / MAILBOX</span>
+      <small>ATTACHMENTS Object Store</small>
       <small>Ciphertext storage + routing</small>
       <div class="flow-service">
         <strong>Identity service</strong>
-        <small>Enrollment · signed registration log</small>
+        <small>Enrollment · signed identity journals</small>
       </div>
     </div>
     <div class="flow-link">
@@ -37,10 +38,12 @@
     </strong>{" "}
     <span id="flow-desc">
       Clients exchange MLS ciphertext through NATS and JetStream. A separate
-      service manages public identities, signs registration checkpoints and
-      provisions streams and consumers. Each endpoint decrypts and retains its
-      own plaintext history. The broker still sees routing and traffic metadata;
-      the loopback development transport has no TLS.
+      service manages public identities and revocations, signs journal
+      checkpoints and provisions streams and consumers. Files are
+      client-encrypted in Object Store; their keys and metadata travel inside
+      MLS. Each endpoint decrypts and retains its own plaintext history. The
+      broker still sees routing and traffic metadata; the loopback development
+      transport has no TLS.
     </span>
   </figcaption>
 </figure>

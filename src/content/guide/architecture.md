@@ -3,6 +3,22 @@ title: "Architecture and security"
 description: "Follow a message from local encryption to durable delivery, and examine what each component can see, authorize and retain."
 eyebrow: "02 / Architecture"
 sources:
+  - label: "Authentication migration"
+    path: "docs/architecture/auth-migration.md"
+  - label: "Dynamic authorization: implemented and remaining work"
+    path: "docs/architecture/dynamic-authorization.md"
+  - label: "Dynamic admission operator contract"
+    path: "docs/operator/auth-callout.md"
+  - label: "Deferred typing UI"
+    path: "docs/technical-debt.md"
+  - label: "Encrypted receipts"
+    path: "docs/receipts.md"
+  - label: "Message relationships"
+    path: "docs/message-relations.md"
+  - label: "Explicit service participants"
+    path: "docs/service-participants.md"
+  - label: "Ephemeral encryption boundaries"
+    path: "docs/ephemeral-events.md"
   - label: "Device revocation and MLS rekeying"
     path: "docs/device-revocation.md"
   - label: "Encrypted identity-administration recovery"
@@ -25,13 +41,13 @@ sources:
 
 ## Components and responsibilities
 
-`epochgrid-core` contains identity, wire types, OpenMLS state, local SQLite storage and NATS operations. The `epochgrid` binary supplies scripting commands and a Ratatui terminal interface. `epochgrid-service` is a NATS-only identity service.
+`epochgrid-core` contains identity, wire types, OpenMLS state, local SQLite storage and NATS operations. The `epochgrid` binary supplies scripting commands and a Ratatui terminal interface. `epochgrid-service` is a NATS-only metadata and admission backend. The reference status participant runs through `epochgrid participant run`; it is a separate enrolled endpoint, not a backend decryption path.
 
-The service validates public registrations, checks explicit enrollment, signs the registration log, serves audited discovery and reserves one-use KeyPackages. It provisions JetStream streams, key-value buckets and durable consumers. SQLite belongs to the client, not the service. There is no HTTP API or server-side transcript store.
+The service validates public registrations, checks the applicable enrollment authority, signs the registration log, serves audited discovery and reserves one-use KeyPackages. It provisions JetStream streams, key-value buckets and durable consumers. Dynamic admission also uses a service-host SQLite registry, `auth.sqlite`, for canonical identities, enrollment tokens and authorization policies. It holds no chat transcript or MLS group secrets. There is no HTTP API or server-side transcript store.
 
 ## Identity and joining
 
-A device has an NKey for NATS authentication and an independently generated MLS Ed25519 signing key. Registration signs the binding between user, device, NATS public key, MLS credential and KeyPackage. The service validates the signature, package lifetime and operator enrollment. Clients revalidate directory records on lookup.
+A device has an NKey for NATS authentication and an independently generated MLS Ed25519 signing key. Registration signs the binding between user, device, NATS public key, MLS credential and KeyPackage. The service validates the signature, package lifetime and enrollment binding. Static fixtures use operator enrollment; dynamic admission uses a provider-neutral canonical UserId and separately enrolled device keys. Clients revalidate directory records on lookup.
 
 A signature demonstrates possession of a key; it does not verify a human identity. The operator remains trusted for initial enrollment. Milestone 13 adds manual verification and an authenticated registration history; Milestone 14 adds separately authorized device revocation.
 
@@ -53,19 +69,23 @@ Audits protect discovery and group admission without proving human identity or r
 
 ### Transport
 
-NATS carries connections and traffic. **The loopback development configuration has no TLS.** NKeys authenticate a connection but do not encrypt it. Remote transport would require TLS and configured trust roots; application encryption does not hide all transport metadata.
+NATS carries connections and traffic. **The loopback development configuration has no TLS.** NKeys authenticate a connection but do not encrypt it. The dynamic service normally requires a TLS URL and callout evidence of client TLS; its explicit plaintext exception is development-only. TLS protects the connection, while MLS protects conversation content. Neither hides all transport metadata.
 
 ### Broker authorization
 
-Static NKey permissions limit request subjects and access to each device's provisioned consumers. Clients cannot create arbitrary consumers or read another device's mailbox. Current group wildcards cover the shared Alice/Bob development namespace, so enrolled devices can observe unrelated ciphertext or inject invalid traffic.
+The static fixture uses NKey permissions and provisioned per-device consumers, but broad group wildcards and shared CHAT access expose unrelated ciphertext to enrolled devices. That fixture is not the alpha deployment contract.
 
-Exact membership-aware group permissions are unfinished. MLS validation does not prevent traffic flooding, mailbox blocking or exhaustion of a peer's initial KeyPackage reservation.
+Dynamic admission verifies encrypted, signed NATS Auth Callout requests and device nonce possession against the canonical registry. Restricted, single-use enrollment tokens bind a new device to a user; they grant no chat access. Only a local identity provider exists. Device NKeys, temporary connection keys, backend directory signing keys and the callout issuer have distinct roles.
+
+Milestone 22 adds coordinator-signed public group policies, exact `.message`, `.handshake` and `.ephemeral` subject grants, and transactional membership revocation. These are a non-secret authorization projection, separate from MLS membership. A transport grant cannot create an MLS leaf or decrypt messages.
+
+**Dynamic CLI/TUI messaging is not yet supported.** Client policy/outbox synchronization, filtered durable consumers and Welcome relay remain unfinished. Admission alone does not fix shared CHAT exposure. The operator owns NATS configuration; dynamic enrollment/revocation does not rewrite device-user files or reload NATS.
 
 ### Application envelopes
 
 CHAT carries raw TLS-serialized MLS PrivateMessages for applications and encrypted Commits. Here “TLS serialization” is a binary encoding, not TLS transport. MAILBOX carries an EpochGrid envelope around an MLS Welcome. Registration and identity request/reply use versioned postcard envelopes.
 
-The implementation selects `MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519` through OpenMLS. Receiver checks bind framing and the expected group; sender labels come from authenticated MLS credentials, not broker headers. The maximum application plaintext is 16 KiB.
+The implementation selects `MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519` through OpenMLS. Receiver checks bind framing and the expected group; sender labels come from authenticated MLS credentials, not broker headers. Text messages retain a 16 KiB limit. The protected application envelope now carries stable IDs and typed reply, replacement and reaction relations. Ephemeral events use a different protection path described below.
 
 ### Endpoints
 
@@ -83,7 +103,9 @@ The group coordinator serializes membership changes, initially the creator. If r
 
 An active same-user device or the operator can submit an irreversible, signed revocation for an exact registered device and NKey. Authorization, local verification state, connectivity and MLS membership are separate states. A verified fingerprint does not override revocation, and an active device is not necessarily online.
 
-The service first persists intent in a separate signed Merkle revocation journal. It rewrites public authorization files, requests native NATS reload through a restricted system NKey, and deletes the device's CHAT and MAILBOX consumers. Removing the NKey disconnects existing sessions and prevents reconnect. Failed enforcement retains intent for retry and startup reconciliation. This currently manages one broker/service, not a cluster.
+The service first persists intent in a separate signed Merkle revocation journal. In the static development fixture, it rewrites public authorization files, requests native NATS reload through a restricted system NKey, and deletes the device's CHAT and MAILBOX consumers. Removing the NKey disconnects existing sessions and prevents reconnect. Failed enforcement retains intent for retry and startup reconciliation. This currently manages one broker/service, not a cluster.
+
+In dynamic mode, revocation denies fresh admission and transactionally removes registry memberships. Existing grants last until their signed expiry: 30 seconds by default, at most 60. A registry generation does not retrospectively invalidate an issued JWT. Startup reconciles revocation history before device admission, and unavailable authorization fails closed. This single-host registry is not a validated replicated deployment.
 
 Broker enforcement does not mean offline groups have rekeyed. The coordinator processes history, removes known revoked leaves and publishes the removal Commit transactionally with local MLS state. New encryption is blocked while a known revoked leaf remains; offline groups wait for the coordinator. Old-epoch queued ciphertext is retained with a warning and must be resent explicitly after rekeying, rather than silently re-encrypted.
 
@@ -103,6 +125,28 @@ Downloads require an authenticated local manifest, bounded reads, AEAD and hash 
 
 Attachment manifests and data-encryption keys are plaintext in local SQLite; explicitly saved files are plaintext too. Shared lab permissions let malicious enrolled devices corrupt objects or deny availability. Revocation excludes the old NKey from broker access, but retention and revocation cannot erase copies or keys already held by recipients.
 
+## Ephemeral events and receipts
+
+Core NATS carries transient events outside JetStream and the durable outbox. EpochGrid derives per-event AES-256-GCM keys from the current MLS exporter and signs each protected event with the sender's MLS credential. Current-epoch membership, freshness and replay checks apply without advancing the durable chat ratchet.
+
+This is an exporter-protected application envelope, not MLS PrivateMessage framing. It lacks per-event forward secrecy: compromise of an epoch exporter secret can expose recorded ephemeral traffic from that epoch. Loss is expected; timing and sizes remain visible. **Live typing UI is unreliable and deferred (TD-001)** even though transport security tests remain enabled.
+
+Receipts reuse this encrypted transient path. Submitted means locally committed; server accepted means JetStream acknowledged ciphertext; delivered means a peer claims authenticated local persistence; read means local presentation. Read is not proof of human attention. Device claims are retained in local SQLite, while receipt traffic itself is not durable. Missing receipts mean unknown, and recovery requires peers to overlap online again within the supported request window.
+
+## Replies, edits and reactions
+
+Stable application IDs commit to the canonical event, group and authenticated sending device. Replies, replacements and reactions are new encrypted events; they do not rewrite JetStream messages or erase original plaintext. Only the original sending device may edit its text message. Authenticated per-device counters order competing updates independently of transport arrival for the same known events.
+
+Clients retain an immutable local event log and derive the displayed conversation from it. Missing targets remain unresolved until available. That log is unencrypted and excluded from recovery packages; it is required state, not a disposable cache. Message deletion and cross-device editing are outside this milestone.
+
+## Explicit service participants
+
+An invited participant has independent NATS/MLS keys, a group leaf and local SQLite history. It is intentionally inside the plaintext boundary for its joined conversation, unlike the metadata backend. The authenticated `service` device label does not attest its code or prove other members are human.
+
+The reference status runner handles one explicitly joined channel, returns encrypted replies, and records processing together with its response/outbox transaction to suppress duplicate work after restart. It does not execute shell commands, auto-join channels, fetch attachments or assert human read receipts. Its status describes its own operation, not fabric-wide health.
+
+Coordinator-issued MLS removal advances the epoch and excludes future decryption. It preserves old history and does not revoke the participant's NATS identity. In the static fixture, broad transport grants may still expose ciphertext; account-wide device revocation is a separate operation. Rejoining a removed local group and coordinator self-removal are not implemented.
+
 ## Persistence and delivery
 
 JetStream's CHAT stream retains encrypted group traffic; MAILBOX retains Welcomes for offline invitees. TRANSPARENCY KV stores separate signed registration and revocation histories, with IDENTITIES as the registration projection. ATTACHMENTS Object Store holds encrypted files. CHANNELS KV is provisioned but unused.
@@ -117,7 +161,7 @@ These are not distributed transactions. JetStream deduplication is time-bounded,
 
 Infrastructure can observe subjects, timing, sizes, connection metadata and public identity records. The threat model does not claim to hide usernames, credentials, KeyPackages, group names in MLS group identifiers or traffic relationships.
 
-The broker is trusted for availability and sequencing, not application plaintext. It can suppress or reorder traffic. A plaintext-marker scan in the acceptance suite is useful regression evidence for the tested path, not proof against all leakage, side channels or compromised endpoints.
+The broker is trusted for availability and sequencing, not application plaintext. The dynamic registry additionally sees canonical users, device bindings and public group authorization state. Invited participants see the plaintext of their joined conversations. It can suppress or reorder traffic. A plaintext-marker scan in the acceptance suite is useful regression evidence for the tested path, not proof against all leakage, side channels or compromised endpoints.
 
 ## Failure assumptions and current limits
 

@@ -9,7 +9,7 @@ import { urls, sourceUrl } from "../site";
 
 <SiteLayout
   title="Messaging across a shared fabric"
-  description="EpochGrid combines NATS infrastructure with MLS end-to-end group encryption. Explore the architecture, prototype capabilities, and developer workflow."
+  description="EpochGrid combines NATS infrastructure with MLS end-to-end group encryption. Explore the architecture, implemented capabilities, and developer workflow."
 >
   <section class="hero wrap">
     <div>
@@ -60,12 +60,12 @@ import { urls, sourceUrl } from "../site";
     </div>
   </section>
   <div class="wrap">
-    <Callout title="Unaudited development prototype">
+    <Callout title="MVP implemented · alpha preparation in progress">
       <p>
-        Milestones 0–16 are complete, including device verification, revocation
-        and rekeying, encrypted identity-administration recovery, and encrypted
-        attachments. This is a development system with known security and
-        lifecycle gaps.{" "}
+        The tested MVP now includes receipts, replies, edits, reactions and
+        explicitly invited service participants. Dynamic admission works;
+        dynamic CLI/TUI messaging is not yet supported. Typing UI is deferred.
+        No alpha release is tagged, and the system remains unaudited.{" "}
         <a href="/project/#current-status">
           Read the current scope and limitations →
         </a>
@@ -86,9 +86,9 @@ import { urls, sourceUrl } from "../site";
         <span class="index">01</span>
         <h3>Infrastructure has a defined role</h3>
         <p>
-          NATS handles routing, authentication and persistence. The identity
-          service manages public registration metadata, without an application
-          decryption path.
+          NATS handles routing and persistence. The metadata backend manages
+          public identity and authorization state without decrypting chat. An
+          invited service participant is a separate, readable endpoint.
         </p>
       </div>
       <div>
@@ -146,6 +146,22 @@ import { urls, sourceUrl } from "../site";
           "Client-encrypted control credentials and trust evidence. Resuming messaging requires a fresh device and invitation; old chat keys and history are excluded.",
         ],
         [
+          "Delivery and read receipts",
+          "Encrypted device claims distinguish server acceptance, delivery and local presentation. Read is not proof of human attention.",
+        ],
+        [
+          "Replies, edits and reactions",
+          "Stable application IDs and authenticated, append-only relationships. Edits preserve original history.",
+        ],
+        [
+          "Explicit service participants",
+          "An invited MLS endpoint can answer status requests. It reads its joined conversation; the metadata backend does not.",
+        ],
+        [
+          "Dynamic admission",
+          "Canonical user/device enrollment and expiring Auth Callout grants. Full dynamic messaging integration remains in progress.",
+        ],
+        [
           "Encrypted attachments",
           "Client-encrypted files in NATS Object Store; metadata and keys inside MLS. Explicit authenticated saves, with size and retention limits.",
         ],
@@ -158,7 +174,8 @@ import { urls, sourceUrl } from "../site";
       ))}
     </div>
     <p class="fine">
-      Implemented describes repository code, not production readiness.{" "}
+      Implemented describes repository code, not production readiness. The full
+      messaging flow currently runs in the explicit static development fixture.{" "}
       <ExternalLink href={sourceUrl("docs/mvp-acceptance.md")}>
         Acceptance evidence
       </ExternalLink>{" "}
@@ -179,10 +196,11 @@ import { urls, sourceUrl } from "../site";
   <div class="wrap">
     <Callout title="Toward the MVP/production alpha">
       <p>
-        <StatusBadge status="planned" /> Ephemeral encrypted events are next
-        (17). Receipts, message relationships and secure service participants
-        remain planned (18–20). These targets do not establish production
-        readiness or a fixed release scope.{" "}
+        <StatusBadge status="experimental" /> Milestone 22 has signed group
+        policies, exact subject grants and transactional revocation. Client
+        policy synchronization, filtered consumers and Welcome relay remain
+        unfinished. Protected local storage, deployment validation and release
+        artifacts are still alpha gates.{" "}
         <a href="/project/#toward-the-mvpproduction-alpha">
           Read the release direction and remaining gaps →
         </a>

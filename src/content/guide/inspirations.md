@@ -3,6 +3,12 @@ title: "Inspirations and related work"
 description: "Technical context for the design: actual dependencies, relevant comparisons, and the boundary between shared ideas and protocol compatibility."
 eyebrow: "04 / Related work"
 sources:
+  - label: "Authentication migration"
+    path: "docs/architecture/auth-migration.md"
+  - label: "Dynamic authorization: implemented and remaining work"
+    path: "docs/architecture/dynamic-authorization.md"
+  - label: "Ephemeral encryption boundaries"
+    path: "docs/ephemeral-events.md"
   - label: "Device revocation and MLS rekeying"
     path: "docs/device-revocation.md"
   - label: "Encrypted identity-administration recovery"
@@ -37,13 +43,19 @@ For readers of EpochGrid, the relevant comparison is how conversation state and 
 
 [NATS and JetStream](https://docs.nats.io/concepts/jetstream) provide subject-based messaging and persistent streams with consumers. That separation between communication and retained delivery is directly reflected in EpochGrid's request/reply identity service, durable mailbox and CHAT path.
 
-**Implemented integration:** EpochGrid uses the NATS protocol through `async-nats` and provisions JetStream resources. A generic NATS client is not therefore an EpochGrid client: it would still need the application's identity binding, MLS processing and local state rules.
+**Implemented integration:** EpochGrid uses the NATS protocol through `async-nats` and provisions JetStream resources. Dynamic admission now uses NATS Auth Callout with encrypted requests and expiring grants; exact group-policy support is partly implemented, while dynamic messaging integration remains in progress. A generic NATS client is not therefore an EpochGrid client: it would still need the application's identity binding, MLS processing and local state rules.
+
+## NATS Auth Callout: admission separate from broker configuration
+
+[NATS Auth Callout](https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_callout) delegates connection authorization to an application service. EpochGrid implements this contract for canonical user/device admission, replacing per-device configuration reloads in its intended alpha model.
+
+The distinction matters: admission is not MLS membership, and a short-lived transport grant does not distribute group secrets. Operator/JWT mode and clustered deployment are not yet validated. This is an implemented NATS integration with incomplete messaging authorization integration, not a claim of general identity-provider compatibility.
 
 ## MLS: group state advances through epochs
 
 [Messaging Layer Security, RFC 9420](https://www.rfc-editor.org/rfc/rfc9420.html), specifies group key establishment and encrypted messaging with evolving group state. EpochGrid delegates that cryptography to [OpenMLS](https://openmls.tech/), rather than defining its own group-encryption primitive.
 
-**Implemented protocol:** MLS Welcomes, encrypted application messages and Commits. EpochGrid adds its own enrollment, directory, routing and persistence conventions. Interoperability with unrelated MLS applications has not been established by an integration test or commitment. Coordinated removal and rekeying are implemented, while general key rotation and comprehensive lifecycle guarantees remain incomplete in EpochGrid.
+**Implemented protocol:** MLS Welcomes, encrypted application messages and Commits. EpochGrid adds its own enrollment, directory, routing and persistence conventions. Its transient events use the standard MLS exporter with an application-specific encrypted and signed envelope; that envelope is not MLS PrivateMessage framing and lacks per-event forward secrecy. Interoperability with unrelated MLS applications has not been established by an integration test or commitment. Coordinated removal and rekeying are implemented, while general key rotation and comprehensive lifecycle guarantees remain incomplete in EpochGrid.
 
 ## Signal: key lifecycle is part of the system
 

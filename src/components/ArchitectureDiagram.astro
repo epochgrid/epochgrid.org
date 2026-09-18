@@ -17,8 +17,8 @@
       <small>ATTACHMENTS Object Store</small>
       <small>Ciphertext storage + routing</small>
       <div class="flow-service">
-        <strong>Identity service</strong>
-        <small>Enrollment · signed identity journals</small>
+        <strong>Metadata backend</strong>
+        <small>Identity · admission · authorization</small>
       </div>
     </div>
     <div class="flow-link">
@@ -38,12 +38,13 @@
     </strong>{" "}
     <span id="flow-desc">
       Clients exchange MLS ciphertext through NATS and JetStream. A separate
-      service manages public identities and revocations, signs journal
-      checkpoints and provisions streams and consumers. Files are
-      client-encrypted in Object Store; their keys and metadata travel inside
-      MLS. Each endpoint decrypts and retains its own plaintext history. The
-      broker still sees routing and traffic metadata; the loopback development
-      transport has no TLS.
+      metadata backend manages public identities and authorization without chat
+      keys. An explicitly invited service participant occupies the same
+      plaintext boundary as a client endpoint. Files are encrypted in Object
+      Store; their keys and metadata travel inside MLS. Receipts use a separate
+      encrypted, non-durable Core NATS path. The broker sees routing and traffic
+      metadata. This full message path runs in the static development fixture
+      without TLS; dynamic messaging integration is still in progress.
     </span>
   </figcaption>
 </figure>

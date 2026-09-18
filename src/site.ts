@@ -3,10 +3,10 @@ export const site = {
   url: "https://epochgrid.org",
   description:
     "An experimental messaging system combining NATS infrastructure with MLS end-to-end group encryption.",
-  status: "Unaudited development prototype",
-  revision: "fac33578ef393954f24295fd891f0190fc3a8cd7",
-  reviewed: "2026-09-10",
-  milestone: 16,
+  status: "Unaudited alpha preparation",
+  revision: "d398b353d3ac3480297408847990b9eca2ac9f33",
+  reviewed: "2026-09-18",
+  baseline: "MVP + alpha preparation",
 };
 const core = "https://github.com/epochgrid/epochgrid";
 export const urls = {

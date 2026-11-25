@@ -20,7 +20,7 @@
     "validate": "npm run format:check && npm run lint && npm run check && npm run build && npm test && npm run test:links && npm run test:browser"
   },
   "dependencies": {
-    "@astrojs/sitemap": "3.7.4",
+    "@astrojs/sitemap": "3.7.6",
     "astro": "7.4.7"
   },
   "devDependencies": {
